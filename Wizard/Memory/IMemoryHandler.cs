@@ -1,0 +1,15 @@
+using Newtonsoft.Json.Linq;
+using Wizard.LLM;
+
+namespace Wizard.Memory
+{
+    public interface IMemoryHandler
+    {
+        public void RememberMessage(MessageContainer message);
+
+        public List<MessageContainer> RecallMemory(MessageContainer message);
+        
+        public JToken Serialize();
+        public void   Deserialize(JToken data);
+    }
+}

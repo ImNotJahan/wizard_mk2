@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "Terminal": {
+      "commandName": "Project",
+      "commandLineArgs": "terminal"
+    },
+    "Discord": {
+      "commandName": "Project",
+      "commandLineArgs": "discord"
+    }
+  }
+}
