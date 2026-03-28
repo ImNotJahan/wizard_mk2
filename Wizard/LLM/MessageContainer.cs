@@ -5,13 +5,15 @@ namespace Wizard.LLM
 {
     public sealed class MessageContainer
     {
-        readonly string content;
-        readonly Author author;
+        readonly string   content;
+        readonly Author   author;
+        readonly DateTime time;
 
         public MessageContainer(string content, Author author = Author.User)
         {
             this.content = content;
-            this.author  = author;   
+            this.author  = author;  
+            this.time    = DateTime.UtcNow; 
         }
 
         public MessageContainer(JToken data)
@@ -21,6 +23,10 @@ namespace Wizard.LLM
 
             if(content is null) throw new Exception("Content is null");
             if(author  is null) throw new Exception("Author is null");
+
+            DateTime? time = (DateTime?) data["time"];
+
+            if(time is not null) this.time = (DateTime) time;
 
             if(!Enum.IsDefined(typeof(Author), author)) throw new Exception($"Invalid author type {author}");
             
@@ -37,10 +43,14 @@ namespace Wizard.LLM
                 _           => throw new Exception($"Unexpected author type {author}")
             };
 
+            string formatted = content;
+
+            if(role == Role.User) formatted = "[" + time.ToString("yyyy/MM/dd HH:mm:ss") + "] " + formatted;
+
             return new()
             {
                 Role    = role,
-                Content = content,
+                Content = content
             };
         }
 
@@ -53,7 +63,8 @@ namespace Wizard.LLM
             return new JObject()
             {
                 ["content"] = content,
-                ["author"]  = (int) author
+                ["author"]  = (int) author,
+                ["time"]    = time
             };
         }
     }
