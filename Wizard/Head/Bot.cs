@@ -11,11 +11,11 @@ namespace Wizard.Head
 
         readonly List<IMemoryHandler> memoryHandlers = memoryHandlers;
 
-        private List<MessageContainer> AssembleContext(MessageContainer message)
+        private async Task<List<MessageContainer>> AssembleContext(MessageContainer message)
         {
             List<MessageContainer> context = [];
 
-            foreach(IMemoryHandler handler in memoryHandlers) context.AddRange(handler.RecallMemory(message));
+            foreach(IMemoryHandler handler in memoryHandlers) context.AddRange(await handler.RecallMemory(message));
 
             context.Add(message);
 
@@ -31,13 +31,13 @@ namespace Wizard.Head
         {
             MessageContainer formattedMessage = new($"{author} says: {message}");
 
-            if(!await llm.WantsToRespond(AssembleContext(formattedMessage)))
+            if(!await llm.WantsToRespond(await AssembleContext(formattedMessage)))
             {
                 await RememberMessage(formattedMessage);
                 return null;
             }
 
-            MessageContainer response = await llm.RespondToMessage(AssembleContext(formattedMessage));
+            MessageContainer response = await llm.RespondToMessage(await AssembleContext(formattedMessage));
 
             await RememberMessage(formattedMessage);
             await RememberMessage(response);

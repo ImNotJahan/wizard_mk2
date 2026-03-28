@@ -16,7 +16,7 @@ namespace Wizard.Memory
             if(memory.Count == maxMessages) await Resummarize();
         }
 
-        public override List<MessageContainer> RecallMemory(MessageContainer message) => [summary];
+        public async override Task<List<MessageContainer>> RecallMemory(MessageContainer message) => [summary];
 
         private async Task Resummarize()
         {

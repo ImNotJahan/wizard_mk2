@@ -46,6 +46,8 @@ namespace Wizard.LLM
 
         public string GetContent() => content;
 
+        public Author GetAuthor() => author;
+
         public JToken Serialize()
         {
             return new JObject()

@@ -29,6 +29,7 @@ namespace Wizard
 
             List<IMemoryHandler> memoryHandlers = [
                 new Summary(20, llm),
+                new RAG(5),
                 new SlidingWindow(20)
             ];
 
