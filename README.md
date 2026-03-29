@@ -2,6 +2,9 @@
 Lane is a chatbot designed to feel authentic, following in the spirit of
 the Twitch streamer Neuro-sama.
 
+Want to talk to Lane? [Support me on Patreon](https://www.patreon.com/cw/ImNotJahan) and gain
+access to my instance of her, + tons of other things!
+
 ## Current features
 - Can be interacted with through either terminal or discord
 - Has window, summary, and RAG memory

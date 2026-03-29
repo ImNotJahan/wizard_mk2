@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json.Linq;
 using Wizard.Body;
 using Wizard.LLM;
 using Wizard.Memory;
@@ -10,6 +11,12 @@ namespace Wizard
     {
         static async Task Main(string[] args)
         {
+            IConfigurationRoot config = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json")
+                .Build();
+            
+            Settings? settings = config.GetRequiredSection("Settings").Get<Settings>();
+
             Body selectedBody;
 
             if(args.Length < 1) selectedBody = Body.Terminal;
@@ -27,11 +34,39 @@ namespace Wizard
 
             ILLM llm = new Claude();
 
-            List<IMemoryHandler> memoryHandlers = [
-                new Summary(10, llm),
-                new RAG(10),
-                new SlidingWindow(10)
-            ];
+            List<IMemoryHandler> memoryHandlers = [];
+
+            if(settings is null)
+            {
+                memoryHandlers = [
+                    new Summary(10, llm),
+                    new RAG(10),
+                    new SlidingWindow(10)
+                ];
+            }
+            else
+            {
+                foreach(HandlerSettings handler in settings.MemoryHandlers)
+                {
+                    switch (handler.Handler)
+                    {
+                        case "RAG":
+                            memoryHandlers.Add(new RAG((ulong) handler.Size));
+                            break;
+                        
+                        case "Summary":
+                            memoryHandlers.Add(new Summary(handler.Size, llm));
+                            break;
+                        
+                        case "SlidingWindow":
+                            memoryHandlers.Add(new SlidingWindow(handler.Size));
+                            break;
+                        
+                        default:
+                            throw new Exception($"Invalid handler type {handler.Handler}");
+                    }
+                }
+            }
 
             if (JSONWriter.HasData())
             {
@@ -51,7 +86,8 @@ namespace Wizard
 
             if(selectedBody == Body.Discord)
             {
-                Discord discord = new(llm, memoryHandlers);
+                ulong   defaultChannel = settings?.DefaultDiscordChannel ?? 0;
+                Discord discord        = new(llm, memoryHandlers, defaultChannel);
 
                 await discord.ConnectAsync();
 
@@ -69,6 +105,18 @@ namespace Wizard
         enum Body
         {
             Discord, Terminal
+        }
+
+        public sealed class Settings
+        {
+            public required HandlerSettings[] MemoryHandlers        { get; set; }
+            public required ulong             DefaultDiscordChannel { get; set; }
+        }
+
+        public sealed class HandlerSettings
+        {
+            public required string Handler { get; set; }
+            public required int    Size    { get; set; }
         }
     }
 }

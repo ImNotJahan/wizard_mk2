@@ -14,7 +14,9 @@ namespace Wizard.Body
 
         DiscordChannel? recentChannel = null;
 
-        public Discord(ILLM llm, List<IMemoryHandler> memoryHandlers)
+        readonly ulong defaultChannel;
+
+        public Discord(ILLM llm, List<IMemoryHandler> memoryHandlers, ulong defaultChannel)
         {
             client = new DiscordClient(new DiscordConfiguration()
             {
@@ -22,6 +24,8 @@ namespace Wizard.Body
                 TokenType = TokenType.Bot,
                 Intents   = DiscordIntents.AllUnprivileged | DiscordIntents.MessageContents
             });
+
+            this.defaultChannel = defaultChannel;
 
             bot = new(llm, memoryHandlers);
 
@@ -50,7 +54,7 @@ namespace Wizard.Body
         private async void OnHadGoodThought(string thought)
         {
             if(recentChannel is not null) await client.SendMessageAsync(recentChannel, thought);
-            else await client.SendMessageAsync(await client.GetChannelAsync(1458989331518853253), thought);
+            else await client.SendMessageAsync(await client.GetChannelAsync(defaultChannel), thought);
         }
 
         private async Task OnMessageCreated(DiscordClient client, MessageCreateEventArgs args)
